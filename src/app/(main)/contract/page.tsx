@@ -1,7 +1,7 @@
 "use client";
 
 // react
-import { useState, useEffect } from "react";
+import { useState, useLayoutEffect, useRef } from "react";
 //  next
 import Link from "next/link";
 // import
@@ -37,10 +37,10 @@ import {
 import { ABIType } from "@/common/types";
 
 export default function Home() {
-  const web3 = new Web3(window.ethereum);
+  const web3Ref = useRef<Web3>(new Web3());
   // utils
   const priceConverter = new PriceConverter({
-    web3,
+    web3: web3Ref.current,
   });
 
   // state
@@ -81,7 +81,7 @@ export default function Home() {
   // handlers
   const connectWallet = async () => {
     try {
-      const accounts = await web3.eth.requestAccounts();
+      const accounts = await web3Ref.current.eth.requestAccounts();
       if (accounts.length) {
         setAddress(accounts[0]);
         setIsConnected(true);
@@ -95,7 +95,7 @@ export default function Home() {
     setFetchingAbi(true);
 
     try {
-      const chainId = await web3.eth.getChainId();
+      const chainId = await web3Ref.current.eth.getChainId();
       const parsedChainId = Number(chainId);
 
       if (parsedChainId != 1) {
@@ -128,7 +128,7 @@ export default function Home() {
 
     try {
       console.log({ data });
-      const chainId = await web3.eth.getChainId();
+      const chainId = await web3Ref.current.eth.getChainId();
       const parsedChainId = Number(chainId);
 
       if (parsedChainId != 1) {
@@ -175,9 +175,16 @@ export default function Home() {
   };
 
   // effects
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (window.ethereum) {
+      // set web3 provider
+      web3Ref.current.setProvider(window.ethereum);
+    }
+  });
+
+  useLayoutEffect(() => {
     // check if wallet is connected
-    web3.eth
+    web3Ref.current.eth
       .getAccounts()
       .then((accounts) => {
         if (accounts.length) {
@@ -212,7 +219,7 @@ export default function Home() {
     });
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // check if contract address is valid
     if (validator.isAddress(contractAddress)) {
       // fetch contract contract abi and store in state
@@ -223,7 +230,7 @@ export default function Home() {
     }
   }, [contractAddress]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (contractMethod && contractAbi) {
       // remove all old args if any
       resetField("contractArgs");

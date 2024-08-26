@@ -1,7 +1,7 @@
 "use client";
 
 // react
-import { useState, useEffect } from "react";
+import { useState, useLayoutEffect, useRef } from "react";
 //  next
 import Link from "next/link";
 // import
@@ -24,10 +24,10 @@ import { PriceConverter, PriceFormatter } from "@/utils";
 import { formSchema, FormValues } from "@/common/transaction-form.schema";
 
 export default function Home() {
-  const web3 = new Web3(window.ethereum);
+  const web3Ref = useRef<Web3>(new Web3());
   // utils
   const priceConverter = new PriceConverter({
-    web3,
+    web3: web3Ref.current,
   });
 
   // state
@@ -108,7 +108,14 @@ export default function Home() {
   };
 
   // effects
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (window.ethereum) {
+      // set web3 provider
+      web3Ref.current.setProvider(window.ethereum);
+    }
+  }, []);
+
+  useLayoutEffect(() => {
     convertAmount(amount, isUsd);
   }, [amount, isUsd]);
 
@@ -125,7 +132,7 @@ export default function Home() {
           href="/contract"
           className="text-sm md:text-base text-blue-500 hover:text-blue-400 mt-2"
         >
-          Estimate contract transaction instead 
+          Estimate contract transaction instead
           <LinkIcon className="h-3 w-3 inline-block ml-1" />
         </Link>
       </div>

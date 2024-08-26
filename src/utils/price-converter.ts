@@ -11,15 +11,19 @@ class PriceConverter {
   private priceFeed: string;
 
   constructor({
-    web3 = new Web3(window.ethereum), // window.ethereum
+    web3 = new Web3(window ? window.ethereum : undefined),
     priceFeed = MainnetPriceFeeds.EthUsd,
   }: {
     web3?: Web3;
     priceFeed?: string;
   }) {
     this.web3 = web3;
-    this.web3.registerPlugin(new ChainlinkPlugin());
     this.priceFeed = priceFeed ?? MainnetPriceFeeds.EthUsd;
+
+    // check if plugin is registered
+    if (!this.web3.chainlink) {
+      this.web3.registerPlugin(new ChainlinkPlugin());
+    }
   }
 
   async toTokenValue(priceValue: number): Promise<string> {

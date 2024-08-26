@@ -106,7 +106,7 @@ export default function MainLayout({
         setConnectNetworkId(0);
       });
 
-    if (window) {
+    if (window?.ethereum) {
       // listen for network change
       window.ethereum.on("chainChanged", (chainId: bigint) => {
         setConnectNetworkId(Number(chainId));

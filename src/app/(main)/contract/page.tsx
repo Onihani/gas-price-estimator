@@ -196,27 +196,29 @@ export default function Home() {
         setIsConnected(false);
       });
 
-    // listen for account change
-    window.ethereum.on("accountsChanged", (accounts: string[]) => {
-      if (accounts.length) {
-        setAddress(accounts[0]);
+    if (window?.ethereum) {
+      // listen for account change
+      window.ethereum.on("accountsChanged", (accounts: string[]) => {
+        if (accounts.length) {
+          setAddress(accounts[0]);
+          setIsConnected(true);
+        } else {
+          setAddress("");
+          setIsConnected(false);
+        }
+      });
+
+      // listen for connect
+      window.ethereum.on("connect", () => {
         setIsConnected(true);
-      } else {
+      });
+
+      // listen for disconnect
+      window.ethereum.on("disconnect", () => {
         setAddress("");
         setIsConnected(false);
-      }
-    });
-
-    // listen for connect
-    window.ethereum.on("connect", () => {
-      setIsConnected(true);
-    });
-
-    // listen for disconnect
-    window.ethereum.on("disconnect", () => {
-      setAddress("");
-      setIsConnected(false);
-    });
+      });
+    }
   }, []);
 
   useLayoutEffect(() => {
